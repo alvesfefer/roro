@@ -1,26 +1,37 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { CheckCircle, XCircle, ChevronLeft, HelpCircle, Clock } from 'lucide-react';
+import { CheckCircle, ChevronLeft, HelpCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const QuizInProgressPage = () => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
+  const [quizData, setQuizData] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Placeholder data
-  const currentQuestion = {
-    text: "Qual é a capital da França?",
-    options: ["Berlim", "Madri", "Paris", "Roma"],
-    timeLimit: 30, // seconds
-  };
-  const questionNumber = 1;
-  const totalQuestions = 10;
+  useEffect(() => {
+    async function fetchQuiz() {
+      try {
+        const res = await axios.get(`http://localhost:5000/quizzes/${roomCode}`);
+        setQuizData(res.data);
+      } catch (error) {
+        console.error("Erro ao buscar quiz:", error);
+      }
+    }
 
-  // State for selected answer (to be implemented)
-  // const [selectedAnswer, setSelectedAnswer] = useState(null);
+    fetchQuiz();
+  }, [roomCode]);
+
+  if (!quizData) {
+    return <div className="mt-10 text-lg font-medium text-center">Carregando quiz...</div>;
+  }
+
+  const currentQuestion = quizData.questions[currentIndex];
+  const totalQuestions = quizData.questions.length;
+  const questionNumber = currentIndex + 1;
 
   return (
     <motion.div 
@@ -29,34 +40,36 @@ const QuizInProgressPage = () => {
       transition={{ duration: 0.5 }}
       className="max-w-3xl mx-auto"
     >
-       <Button variant="outline" onClick={() => navigate(`/aluno/lobby/${roomCode}`)} className="mb-6">
-        <ChevronLeft className="mr-2 h-4 w-4" /> Voltar ao Lobby (Sair do Quiz)
+      <Button variant="outline" onClick={() => navigate(`/aluno/lobby/${roomCode}`)} className="mb-6">
+        <ChevronLeft className="w-4 h-4 mr-2" /> Voltar ao Lobby (Sair do Quiz)
       </Button>
+      
       <Card className="overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-primary via-purple-600 to-secondary text-primary-foreground p-6">
-          <div className="flex justify-between items-center">
+        <CardHeader className="p-6 bg-gradient-to-r from-primary via-purple-600 to-secondary text-primary-foreground">
+          <div className="flex items-center justify-between">
             <CardTitle className="text-3xl">Quiz em Andamento!</CardTitle>
-            <div className="text-lg font-semibold bg-black/20 px-3 py-1 rounded-md">
+            <div className="px-3 py-1 text-lg font-semibold rounded-md bg-black/20">
               Sala: {roomCode}
             </div>
           </div>
-          <CardDescription className="text-primary-foreground/80 mt-1">
+          <CardDescription className="mt-1 text-primary-foreground/80">
             Pergunta {questionNumber} de {totalQuestions}
           </CardDescription>
         </CardHeader>
+        
         <CardContent className="p-6 md:p-8">
-          <div className="mb-6 p-6 bg-muted/30 rounded-lg shadow">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-2xl font-semibold flex items-center">
+          <div className="p-6 mb-6 rounded-lg shadow bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="flex items-center text-2xl font-semibold">
                 <HelpCircle className="mr-3 h-7 w-7 text-accent" /> {currentQuestion.text}
               </h2>
               <div className="flex items-center text-lg font-medium text-accent">
-                <Clock className="mr-2 h-5 w-5" /> {currentQuestion.timeLimit}s
+                <Clock className="w-5 h-5 mr-2" /> 30s
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {currentQuestion.options.map((option, index) => (
               <motion.div
                 key={index}
@@ -66,29 +79,38 @@ const QuizInProgressPage = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full h-auto py-4 text-left justify-start text-base border-2 border-border hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-150"
+                  className="justify-start w-full h-auto py-4 text-base text-left transition-all duration-150 border-2 border-border hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50"
                   onClick={() => alert(`Você selecionou: ${option}`)} 
                 >
-                  <span className="mr-3 text-primary font-bold">{String.fromCharCode(65 + index)}.</span> {option}
+                  <span className="mr-3 font-bold text-primary">{String.fromCharCode(65 + index)}.</span> {option}
                 </Button>
               </motion.div>
             ))}
           </div>
         </CardContent>
-        <CardFooter className="p-6 bg-muted/20 flex justify-end">
+
+        <CardFooter className="flex justify-end p-6 bg-muted/20">
           <Button 
             size="lg" 
             className="btn-gradient-primary-accent"
-            onClick={() => navigate(`/aluno/resultados/${roomCode}`)}
+            onClick={() => {
+              if (currentIndex + 1 < quizData.questions.length) {
+                setCurrentIndex(currentIndex + 1);
+              } else {
+                navigate(`/aluno/resultados/${roomCode}`);
+              }
+            }}
           >
-            Enviar Resposta e Próxima <CheckCircle className="ml-2 h-5 w-5" />
+            Enviar Resposta <CheckCircle className="w-5 h-5 ml-2" />
           </Button>
         </CardFooter>
       </Card>
-       <p className="text-xs text-muted-foreground mt-4 text-center">Esta é uma visualização estática. A lógica de progressão e pontuação será implementada.</p>
+
+      <p className="mt-4 text-xs text-center text-muted-foreground">
+        Esta é uma visualização real do quiz conectado ao banco de dados. 💾✨
+      </p>
     </motion.div>
   );
 };
 
 export default QuizInProgressPage;
-  

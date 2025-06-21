@@ -6,21 +6,21 @@ const QRCodeStylized = ({ value, size = 128, fgColor = "#1F2937", bgColor = "#FF
   if (!value) {
     return (
       <div 
-        className="p-1 bg-gradient-to-br from-primary via-purple-500 to-secondary rounded-lg inline-block shadow-lg flex items-center justify-center"
+        className="flex items-center justify-center p-1 rounded-lg shadow-lg bg-gradient-to-br from-primary via-purple-500 to-secondary"
         style={{ width: size + 8, height: size + 8 }} 
       >
         <div 
-          className="bg-muted rounded-md flex items-center justify-center"
+          className="flex items-center justify-center rounded-md bg-muted"
           style={{ width: size, height: size }}
         >
-          <p className="text-xs text-muted-foreground text-center p-2">Gerando QR Code...</p>
+          <p className="p-2 text-xs text-center text-muted-foreground">Gerando QR Code...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-1 bg-gradient-to-br from-primary via-purple-500 to-secondary rounded-lg inline-block shadow-lg">
+    <div className="inline-block p-1 rounded-lg shadow-lg bg-gradient-to-br from-primary via-purple-500 to-secondary">
       <QRCode
         value={value}
         size={size}

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,28 +16,28 @@ model Professor {
 }
 
 model Quiz {
-  id         Int       @id @default(autoincrement())
-  titulo     String
-  codigo     String    @unique
-  perguntas  Json
-  criadoEm   DateTime  @default(now())
-  professor  Professor @relation(fields: [professorId], references: [id])
+  id          Int        @id @default(autoincrement())
+  titulo      String
+  codigo      String     @unique
+  perguntas   Json
+  criadoEm    DateTime   @default(now())
+  professor   Professor  @relation(fields: [professorId], references: [id])
   professorId Int
-  respostas  Resposta[]
+  respostas   Resposta[]
 }
 
 model Jogador {
-  id       Int       @id @default(autoincrement())
-  nome     String
+  id        Int        @id @default(autoincrement())
+  nome      String
   respostas Resposta[]
 }
 
 model Resposta {
-  id       Int      @id @default(autoincrement())
-  jogador  Jogador  @relation(fields: [jogadorId], references: [id])
-  jogadorId Int
-  quiz     Quiz     @relation(fields: [quizId], references: [id])
-  quizId   Int
-  respostas Json
-  nota     Float?
+  id         Int      @id @default(autoincrement())
+  jogador    Jogador  @relation(fields: [jogadorId], references: [id])
+  jogadorId  Int
+  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  quizId     Int
+  respostas  Json
+  nota       Float?
 }
